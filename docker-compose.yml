@@ -1,0 +1,47 @@
+version: '3'  
+services:  
+  app:
+    image: friendlyhello
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOST=redis
+    ports:
+      - 80:80
+    networks: 
+      - web
+  redis:
+    image: redis:3.2-alpine
+    volumes:
+      - redis_data:/data
+    networks: 
+      - web
+  
+  db:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    deploy:
+            restart_policy: 
+                condition: on-failure
+    environment: 
+        MYSQL_ROOT_PASSWORD: password
+  lb:
+    image: dockercloud/haproxy
+    ports:
+        - 4000:80
+    depends_on:
+        - app
+    volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+    networks: 
+      - web
+    deploy:
+      placement:
+        constraints: [node.role == manager]        
+volumes:  
+  redis_data:
+
+networks:
+  web:
+    driver: overlay
+          
