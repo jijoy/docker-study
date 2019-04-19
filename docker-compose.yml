@@ -1,4 +1,4 @@
-version: '3'  
+version: '3.3'  
 services:  
   app:
     image: friendlyhello
@@ -7,9 +7,11 @@ services:
     environment:
       - REDIS_HOST=redis
     ports:
-      - 80:80
+      - 80
     networks: 
       - web
+    environment:
+      - SERVICE_PORTS=80
   redis:
     image: redis:3.2-alpine
     volumes:
@@ -38,6 +40,17 @@ services:
     deploy:
       placement:
         constraints: [node.role == manager]        
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "8090:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    networks:
+      - web        
 volumes:  
   redis_data:
 
